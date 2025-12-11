@@ -14,14 +14,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const server_1 = require("@apollo/server");
 const express4_1 = require("@apollo/server/express4");
+const typeDefs_1 = require("./graphql/typeDefs");
+const resolvers_1 = require("./graphql/resolvers");
 const express_1 = __importDefault(require("express"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-const typeDefs_1 = require("./graphql/typeDefs");
-const resolvers_1 = require("./graphql/resolvers");
-const logger_middleware_1 = require("./middleware/logger.middleware");
 // Create Express server
 const app = (0, express_1.default)();
 // Create Apollo server
@@ -34,20 +33,21 @@ const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Connect to MongoDB
         const MONGO_URI = process.env.MONGO_URI;
-        yield mongoose_1.default.connect(MONGO_URI, { dbName: 'graphql' });
+        yield mongoose_1.default.connect(MONGO_URI, { dbName: 'my_store' });
         console.log("Connected to MongoDB");
         // Apollo Server
         yield apolloServer.start();
         // Unified middleware
-        app.use("/graphql", (0, cors_1.default)(), express_1.default.json(), logger_middleware_1.loggerMiddleware, (0, express4_1.expressMiddleware)(apolloServer));
+        app.use("/graphql", (0, cors_1.default)(), express_1.default.json(), (0, express4_1.expressMiddleware)(apolloServer));
         // Express Server
         const PORT = process.env.PORT || 3000;
         app.listen(PORT, () => {
-            console.log(`Server is running on http://localhost:${PORT}/graphql...`);
+            console.log(`Server is running on http://localhost:${PORT}/graphql`);
         });
     }
     catch (err) {
-        console.error(`Error starting server...`);
+        console.error(err);
+        throw new Error("Error starting server");
     }
 });
 startServer();
